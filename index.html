@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ナイトレインキャラルーレット</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Yu Gothic", "Meiryo", sans-serif;
+      background: linear-gradient(135deg, #141428, #29295a);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .app {
+      width: min(1100px, 100%);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+      font-size: 36px;
+      letter-spacing: 0.08em;
+    }
+
+    .roulette-area {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .slot {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 24px;
+      padding: 84px 20px 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .slot-label {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 110px;
+      font-size: 20px;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(6px);
+      z-index: 2;
+      color: white;
+      text-align: center;
+    }
+
+    .slot-label-input {
+      width: 140px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .slot-label-input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .image-frame {
+      width: 100%;
+      max-width: 230px;
+      aspect-ratio: 5 / 7;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-frame.empty {
+      display: none;
+    }
+
+    .image-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transform: scale(1.12);
+      display: block;
+    }
+
+    .result-name {
+      margin-top: 14px;
+      min-height: 34px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .spinning .image-frame,
+    .spinning .result-name {
+      animation: pulse 0.12s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from {
+        transform: scale(0.96);
+        opacity: 0.65;
+      }
+      to {
+        transform: scale(1.03);
+        opacity: 1;
+      }
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 16px 44px;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #ffdd57;
+      color: #222;
+      box-shadow: 0 10px 0 #c99f16, 0 18px 30px rgba(0, 0, 0, 0.35);
+      transition: 0.15s;
+    }
+
+    button:hover {
+      transform: translateY(2px);
+      box-shadow: 0 8px 0 #c99f16, 0 14px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    button:active {
+      transform: translateY(8px);
+      box-shadow: 0 2px 0 #c99f16, 0 8px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 800px) {
+      .roulette-area {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>ナイトレインキャラルーレット</h1>
+
+    <div class="roulette-area">
+      <div class="slot" id="slot1">
+        <div class="slot-label">
+          <input class="slot-label-input" type="text" value="1人目" />
+        </div>
+        <div class="image-frame empty">
+          <img src="" alt="" />
+        </div>
+        <div class="result-name"></div>
+      </div>
+
+      <div class="slot" id="slot2">
+        <div class="slot-label">
+          <input class="slot-label-input" type="text" value="2人目" />
+        </div>
+        <div class="image-frame empty">
+          <img src="" alt="" />
+        </div>
+        <div class="result-name"></div>
+      </div>
+
+      <div class="slot" id="slot3">
+        <div class="slot-label">
+          <input class="slot-label-input" type="text" value="3人目" />
+        </div>
+        <div class="image-frame empty">
+          <img src="" alt="" />
+        </div>
+        <div class="result-name"></div>
+      </div>
+    </div>
+
+    <button id="startButton">ルーレット開始</button>
+  </div>
+
+  <script>
+    const items = [
+      { name: "追跡者", image: "images/tsuisekisha.png" },
+      { name: "守護者", image: "images/shugosha.png" },
+      { name: "レディ", image: "images/lady.png" },
+      { name: "隠者", image: "images/inja.png" },
+      { name: "鉄の目", image: "images/tetsunome.png" },
+      { name: "無頼漢", image: "images/buraikan.png" },
+      { name: "執行者", image: "images/shikkosha.png" },
+      { name: "復讐者", image: "images/fukushusha.png" },
+      { name: "学者", image: "images/gakusha.png" },
+      { name: "葬儀屋", image: "images/sogiya.png" }
+    ];
+
+    const slots = [
+      document.getElementById("slot1"),
+      document.getElementById("slot2"),
+      document.getElementById("slot3")
+    ];
+
+    const startButton = document.getElementById("startButton");
+
+    function getRandomItem() {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function setSlot(slot, item) {
+      const frame = slot.querySelector(".image-frame");
+      const img = slot.querySelector("img");
+      const name = slot.querySelector(".result-name");
+
+      frame.classList.remove("empty");
+      img.src = item.image;
+      img.alt = item.name;
+      name.textContent = item.name;
+    }
+
+    function spinSlot(slot, duration) {
+      return new Promise((resolve) => {
+        slot.classList.add("spinning");
+
+        const interval = setInterval(() => {
+          setSlot(slot, getRandomItem());
+        }, 80);
+
+        setTimeout(() => {
+          clearInterval(interval);
+          const finalItem = getRandomItem();
+          setSlot(slot, finalItem);
+          slot.classList.remove("spinning");
+          resolve(finalItem);
+        }, duration);
+      });
+    }
+
+    async function startRoulette() {
+      startButton.disabled = true;
+      startButton.textContent = "抽選中...";
+
+      await Promise.all([
+        spinSlot(slots[0], 1200),
+        spinSlot(slots[1], 1700),
+        spinSlot(slots[2], 2200)
+      ]);
+
+      startButton.disabled = false;
+      startButton.textContent = "もう一度回す";
+    }
+
+    startButton.addEventListener("click", startRoulette);
+  </script>
+</body>
+</html>
